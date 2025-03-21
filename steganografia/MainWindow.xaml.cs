@@ -21,67 +21,61 @@ namespace SteganografiaWPF
         {
             OpenFileDialog openFileDialog = new OpenFileDialog
             {
-                Filter = "Bitmap Images (*.bmp)|*.bmp"
+                Filter = "Obrazy (*.bmp;*.jpg;*.png)|*.bmp;*.jpg;*.png"
             };
 
             if (openFileDialog.ShowDialog() == true)
             {
-                BitmapImage bitmapImage = new BitmapImage(new Uri(openFileDialog.FileName));
-                bitmap = new WriteableBitmap(bitmapImage);
-
-                MessageBox.Show($"Format obrazu: {bitmap.Format}", "Informacja", MessageBoxButton.OK, MessageBoxImage.Information);
-
-                // Jeśli obraz nie jest w formacie Bgr24, przekonwertuj go
-                if (bitmap.Format != PixelFormats.Bgr24)
+                try
                 {
-                    MessageBox.Show("Obraz nie jest w formacie 24-bitowym, konwertowanie na 24-bitowy BMP...", "Informacja", MessageBoxButton.OK, MessageBoxImage.Information);
-                    bitmap = ConvertToBgr24(bitmapImage);
+                    BitmapImage bitmapImage = new BitmapImage();
+                    bitmapImage.BeginInit();
+                    bitmapImage.UriSource = new Uri(openFileDialog.FileName);
+                    bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                    bitmapImage.EndInit();
+
+                    // Konwersja do formatu 24-bitowego BMP
+                    FormatConvertedBitmap convertedBitmap = new FormatConvertedBitmap();
+                    convertedBitmap.BeginInit();
+                    convertedBitmap.Source = bitmapImage;
+                    convertedBitmap.DestinationFormat = PixelFormats.Bgr24;
+                    convertedBitmap.EndInit();
+
+                    bitmap = new WriteableBitmap(convertedBitmap);
+                    imagePreview.Source = bitmap;
+
+                    MessageBox.Show("Obraz przekonwertowany do formatu 24-bitowego BMP!",
+                                  "Sukces", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
-
-                imagePreview.Source = bitmap;
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Błąd ładowania obrazu: {ex.Message}",
+                                  "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+                    bitmap = null;
+                }
             }
         }
-
-        private WriteableBitmap ConvertToBgr24(BitmapImage originalImage)
-        {
-            int width = originalImage.PixelWidth;
-            int height = originalImage.PixelHeight;
-            int stride = width * 3; // 3 bytes per pixel (24 bits)
-
-            // Obliczamy odpowiednią wielkość tablicy pixelData
-            byte[] pixelData = new byte[height * stride];
-
-            // Sprawdzamy czy obraz ma poprawne wymiary i inicjalizujemy tablicę pixelData
-            if (pixelData.Length > 0)
-            {
-                // Wczytanie danych pikseli
-                originalImage.CopyPixels(pixelData, stride, 0);
-            }
-            else
-            {
-                MessageBox.Show("Obraz jest za mały do konwersji.", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
-                return null;
-            }
-
-            // Utworzenie nowego WriteableBitmap w formacie Bgr24
-            WriteableBitmap convertedBitmap = new WriteableBitmap(width, height, 96, 96, PixelFormats.Bgr24, null);
-            convertedBitmap.WritePixels(new Int32Rect(0, 0, width, height), pixelData, stride, 0);
-
-            return convertedBitmap;
-        }
-
 
         private void LoadText_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog
             {
-                Filter = "Text Files (*.txt)|*.txt"
+                Filter = "Pliki tekstowe (*.txt)|*.txt"
             };
 
             if (openFileDialog.ShowDialog() == true)
             {
-                hiddenText = File.ReadAllText(openFileDialog.FileName);
-                MessageBox.Show("Tekst został załadowany!", "Informacja", MessageBoxButton.OK, MessageBoxImage.Information);
+                try
+                {
+                    hiddenText = File.ReadAllText(openFileDialog.FileName);
+                    MessageBox.Show("Tekst został załadowany!",
+                                  "Sukces", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Błąd odczytu pliku: {ex.Message}",
+                                  "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
 
@@ -89,48 +83,73 @@ namespace SteganografiaWPF
         {
             if (bitmap == null || string.IsNullOrEmpty(hiddenText))
             {
-                MessageBox.Show("Załaduj obraz i tekst przed kodowaniem!", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Najpierw załaduj obraz i tekst!",
+                              "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
-            byte[] textBytes = System.Text.Encoding.UTF8.GetBytes(hiddenText + "\0");
-            int capacity = bitmap.PixelWidth * bitmap.PixelHeight * 3;
-            if (textBytes.Length * 8 > capacity)
+            try
             {
-                MessageBox.Show("Tekst jest za duży, aby zmieścić go w tym obrazie!", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
+                byte[] textBytes = System.Text.Encoding.UTF8.GetBytes(hiddenText + "\0");
+                int requiredPixels = (int)Math.Ceiling(textBytes.Length * 8 / 3.0);
+                int availablePixels = bitmap.PixelWidth * bitmap.PixelHeight;
 
-            int index = 0;
-            int stride = bitmap.PixelWidth * 3;
-            byte[] pixelData = new byte[bitmap.PixelHeight * stride];
-            bitmap.CopyPixels(pixelData, stride, 0);
-
-            for (int i = 0; i < pixelData.Length; i++)
-            {
-                if (index >= textBytes.Length * 8) break;
-                pixelData[i] = (byte)((pixelData[i] & 0xFE) | ((textBytes[index / 8] >> (7 - (index % 8))) & 1));
-                index++;
-            }
-
-            WriteableBitmap encodedBitmap = new WriteableBitmap(bitmap.PixelWidth, bitmap.PixelHeight, 96, 96, PixelFormats.Bgr24, null);
-            encodedBitmap.WritePixels(new Int32Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight), pixelData, stride, 0);
-
-            SaveFileDialog saveFileDialog = new SaveFileDialog
-            {
-                Filter = "Bitmap Images (*.bmp)|*.bmp"
-            };
-
-            if (saveFileDialog.ShowDialog() == true)
-            {
-                using (FileStream stream = new FileStream(saveFileDialog.FileName, FileMode.Create))
+                if (requiredPixels > availablePixels)
                 {
-                    BmpBitmapEncoder encoder = new BmpBitmapEncoder();
-                    encoder.Frames.Add(BitmapFrame.Create(encodedBitmap));
-                    encoder.Save(stream);
+                    MessageBox.Show($"Obraz jest za mały! Wymagane piksele: {requiredPixels}, Dostępne: {availablePixels}",
+                                  "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
                 }
-                MessageBox.Show("Tekst został ukryty w obrazie!", "Sukces", MessageBoxButton.OK, MessageBoxImage.Information);
-                imagePreviewModified.Source = encodedBitmap;
+
+                int stride = bitmap.PixelWidth * 3;
+                byte[] pixelData = new byte[bitmap.PixelHeight * stride];
+                bitmap.CopyPixels(pixelData, stride, 0);
+
+                int bitIndex = 0;
+                for (int i = 0; i < pixelData.Length; i++)
+                {
+                    if (bitIndex >= textBytes.Length * 8) break;
+
+                    byte textBit = (byte)((textBytes[bitIndex / 8] >> (7 - (bitIndex % 8))) & 1);
+                    pixelData[i] = (byte)((pixelData[i] & 0xFE) | textBit);
+                    bitIndex++;
+                }
+
+                WriteableBitmap encodedBitmap = new WriteableBitmap(
+                    bitmap.PixelWidth,
+                    bitmap.PixelHeight,
+                    96, 96,
+                    PixelFormats.Bgr24,
+                    null);
+
+                encodedBitmap.WritePixels(
+                    new Int32Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight),
+                    pixelData,
+                    stride,
+                    0);
+
+                SaveFileDialog saveDialog = new SaveFileDialog
+                {
+                    Filter = "Obraz BMP (*.bmp)|*.bmp"
+                };
+
+                if (saveDialog.ShowDialog() == true)
+                {
+                    using (FileStream stream = new FileStream(saveDialog.FileName, FileMode.Create))
+                    {
+                        BmpBitmapEncoder encoder = new BmpBitmapEncoder();
+                        encoder.Frames.Add(BitmapFrame.Create(encodedBitmap));
+                        encoder.Save(stream);
+                    }
+                    imagePreviewModified.Source = encodedBitmap;
+                    MessageBox.Show("Tekst został zakodowany w obrazie!",
+                                  "Sukces", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Błąd kodowania: {ex.Message}",
+                              "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -138,26 +157,40 @@ namespace SteganografiaWPF
         {
             if (bitmap == null)
             {
-                MessageBox.Show("Załaduj obraz przed dekodowaniem!", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Najpierw załaduj obraz!",
+                              "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
-            int stride = bitmap.PixelWidth * 3;
-            byte[] pixelData = new byte[bitmap.PixelHeight * stride];
-            bitmap.CopyPixels(pixelData, stride, 0);
-
-            byte[] textBytes = new byte[pixelData.Length / 8];
-            int index = 0;
-
-            for (int i = 0; i < pixelData.Length; i++)
+            try
             {
-                if (index >= textBytes.Length * 8) break;
-                textBytes[index / 8] |= (byte)((pixelData[i] & 1) << (7 - (index % 8)));
-                index++;
-            }
+                int stride = bitmap.PixelWidth * 3;
+                byte[] pixelData = new byte[bitmap.PixelHeight * stride];
+                bitmap.CopyPixels(pixelData, stride, 0);
 
-            string extractedText = System.Text.Encoding.UTF8.GetString(textBytes).Split('\0')[0];
-            MessageBox.Show($"Odczytany tekst: {extractedText}", "Sukces", MessageBoxButton.OK, MessageBoxImage.Information);
+                byte[] resultBytes = new byte[pixelData.Length / 8];
+                int bitIndex = 0;
+
+                for (int i = 0; i < pixelData.Length; i++)
+                {
+                    if (bitIndex >= resultBytes.Length * 8) break;
+
+                    byte bit = (byte)(pixelData[i] & 1);
+                    resultBytes[bitIndex / 8] |= (byte)(bit << (7 - (bitIndex % 8)));
+                    bitIndex++;
+                }
+
+                string extractedText = System.Text.Encoding.UTF8.GetString(resultBytes)
+                    .Split('\0')[0];
+
+                MessageBox.Show($"Odczytany tekst:\n{extractedText}",
+                              "Sukces", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Błąd dekodowania: {ex.Message}",
+                              "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 }
