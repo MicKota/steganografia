@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "Mhav3Y47e+WgC86DGpTjFUjYifvwNuant6I9hzoo4J8mw+lHDfnTpDdmXFdLStHI0dYgx3avq1Dw0Jnv3FZ4QA==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\huawei\\source\\repos\\steganografia\\steganografia\\SteganografiaWPF.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\huawei\\.nuget\\packages\\system.drawing.common\\9.0.3\\system.drawing.common.9.0.3.nupkg.sha512"
+  ],
+  "logs": []
+}

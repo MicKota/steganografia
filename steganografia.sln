@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33712.159
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SteganografiaWPF", "steganografia\SteganografiaWPF.csproj", "{90CA3E53-34FA-415B-B9A4-6770B7F1DCAB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{90CA3E53-34FA-415B-B9A4-6770B7F1DCAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90CA3E53-34FA-415B-B9A4-6770B7F1DCAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90CA3E53-34FA-415B-B9A4-6770B7F1DCAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90CA3E53-34FA-415B-B9A4-6770B7F1DCAB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1016C793-A08E-433B-BFE3-912DF1681C08}
+	EndGlobalSection
+EndGlobal
