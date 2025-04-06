@@ -20,3 +20,5 @@ C:\Users\huawei\source\repos\steganografia\steganografia\obj\Debug\net7.0-window
 C:\Users\huawei\source\repos\steganografia\steganografia\obj\Debug\net7.0-windows\SteganografiaWPF.pdb
 C:\Users\huawei\source\repos\steganografia\steganografia\obj\Debug\net7.0-windows\SteganografiaWPF.genruntimeconfig.cache
 C:\Users\huawei\source\repos\steganografia\steganografia\obj\Debug\net7.0-windows\ref\SteganografiaWPF.dll
+C:\Users\huawei\source\repos\steganografia\steganografia\bin\Debug\net7.0-windows\LiveCharts.dll
+C:\Users\huawei\source\repos\steganografia\steganografia\bin\Debug\net7.0-windows\LiveCharts.Wpf.dll

@@ -1,7 +1,7 @@
 ﻿<Window x:Class="SteganografiaWPF.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Steganografia BMP" Height="450" Width="600">
+        Title="Steganografia BMP" Height="500" Width="600">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*" />
@@ -9,6 +9,7 @@
         </Grid.ColumnDefinitions>
 
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -25,15 +26,18 @@
         <Button Grid.Column="0" Grid.Row="1" Content="Ukryj Tekst w Obrazie" Click="Encode_Click" Margin="5"/>
         <Button Grid.Column="1" Grid.Row="1" Content="Odczytaj Tekst z Obrazu" Click="Decode_Click" Margin="5"/>
 
+        <!-- Nowy przycisk do sprawdzania zewnętrznych obrazów -->
+        <Button Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="2" Content="Sprawdź Zewnętrzny Obraz" Click="CheckExternalImage_Click" Margin="5"/>
+
         <!-- Podgląd obrazów -->
-        <Image Grid.Column="0" Grid.Row="2" Name="imagePreview" Stretch="Uniform" Height="200" Margin="5"/>
-        <Image Grid.Column="1" Grid.Row="2" Name="imagePreviewModified" Stretch="Uniform" Height="200" Margin="5"/>
+        <Image Grid.Column="0" Grid.Row="3" Name="imagePreview" Stretch="Uniform" Height="200" Margin="5"/>
+        <Image Grid.Column="1" Grid.Row="3" Name="imagePreviewModified" Stretch="Uniform" Height="200" Margin="5"/>
 
         <!-- Wykres zajętości nośnika -->
-        <StackPanel Grid.ColumnSpan="2" Grid.Row="3" HorizontalAlignment="Center" VerticalAlignment="Top">
+        <StackPanel Grid.ColumnSpan="2" Grid.Row="4" HorizontalAlignment="Center" VerticalAlignment="Top">
             <TextBlock Text="Zajętość nośnika:" FontWeight="Bold" Margin="5" TextAlignment="Center"/>
-            <Viewbox Height="150">
-                <Canvas Name="capacityChart" Width="150" Height="150" />
+            <Viewbox Height="100">
+                <Canvas Name="capacityChart" Width="100" Height="100" />
             </Viewbox>
         </StackPanel>
     </Grid>
